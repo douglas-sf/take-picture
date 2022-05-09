@@ -12,10 +12,16 @@ export function PictureMenu() {
   const video = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-      getVideoStream(stream);
-      if (video.current) video.current.srcObject = stream;
-    });
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        getVideoStream(stream);
+        if (video.current) video.current.srcObject = stream;
+      })
+      .catch((err) => {
+        alert('Não foi possível carregar a sua câmera');
+        console.error(err);
+      });
   }, []);
 
   function clickHandler() {
