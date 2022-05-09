@@ -1,0 +1,72 @@
+.card {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.card .image {
+  width: 100px;
+  height: 100px;
+
+  border-radius: 50%;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.card .info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.card .info .title {
+  width: 100%;
+}
+
+.card .info .title h3 {
+  text-align: center;
+}
+
+.card .info .options {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.card .info .options button {
+  padding: 10px;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+
+  cursor: pointer;
+
+  transition: background-color 300ms ease;
+}
+
+.card .info .options button:first-child {
+  background-color: var(--blue);
+}
+
+.card .info .options button:first-child:hover {
+  background-color: var(--dark-blue);
+}
+
+.card .info .options button:last-child {
+  background-color: hsl(10, 80%, 50%);
+}
+
+.card .info .options button:last-child:hover {
+  background-color: hsl(10, 80%, 40%);
+}
