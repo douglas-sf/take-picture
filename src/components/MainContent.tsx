@@ -1,4 +1,4 @@
-import { Camera, CheckCircle, X } from 'phosphor-react';
+import { Camera, Check, CheckCircle, X } from 'phosphor-react';
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 
 import { getDefaultPictureName } from '../helpers/defaultPictureName';
@@ -11,10 +11,13 @@ export function MainContent() {
 
   const [videoIsAvailable, setVideoIsAvailable] = useState(false);
   const [currentImage, setCurrentImage] = useState<Blob | null>(null);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [pictureNameModalIsOpen, setPictureNameModalIsOpen] = useState(false);
+  const [errorModalIsOpen, setErrorModalIsOpen] = useState(false);
   const [name, setName] = useState('');
 
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const currentImageURL = currentImage ? URL.createObjectURL(currentImage) : null;
 
   function videoIsLoaded() {
     setVideoIsAvailable(true);
@@ -25,8 +28,12 @@ export function MainContent() {
       const blob = await takePhoto(videoRef.current, 'image/png');
 
       setCurrentImage(blob);
-      openModal();
     }
+  }
+
+  function clearCurrentImage() {
+    URL.revokeObjectURL(currentImageURL!);
+    setCurrentImage(null);
   }
 
   function submitHandler(ev: FormEvent<HTMLFormElement>) {
@@ -44,17 +51,25 @@ export function MainContent() {
 
       addPicture(picture);
     }
-    closeModal();
+    closePictureNameModal();
   }
 
-  function openModal() {
-    setModalIsOpen(true);
+  function openPictureNameModal() {
+    setPictureNameModalIsOpen(true);
   }
 
-  function closeModal() {
-    setModalIsOpen(false);
-    setCurrentImage(null);
+  function closePictureNameModal() {
+    setPictureNameModalIsOpen(false);
+    clearCurrentImage();
     setName('');
+  }
+
+  function openErrorModal() {
+    setErrorModalIsOpen(true);
+  }
+
+  function closeErrorModal() {
+    setErrorModalIsOpen(false);
   }
 
   function changeName(ev: ChangeEvent<HTMLInputElement>) {
@@ -70,22 +85,42 @@ export function MainContent() {
           videoRef.current.srcObject = stream;
         }
       } catch {
-        alert('It was not possible to initialize your video device');
+        openErrorModal();
       }
     })();
   }, []);
 
   return (
     <main className="flex-1 flex flex-col justify-center items-center gap-4">
-      <video className="scale-x-[-1]" ref={videoRef} autoPlay muted onLoadedMetadata={videoIsLoaded}></video>
+      <div className={`flex flex-col justify-center items-center gap-8 ${!currentImageURL && 'hidden'}`}>
+        <h2>Preview</h2>
 
-      <button className="btn btn-success" disabled={!videoIsAvailable} onClick={takePictureHandle}>
-        <Camera size={18} weight="bold" />
-        Take Picture
-      </button>
+        {currentImageURL && <img src={currentImageURL} alt="image-preview" />}
 
-      {modalIsOpen && currentImage && (
-        <Modal closeModal={closeModal}>
+        <div className="flex gap-8">
+          <button className="btn btn-success" onClick={openPictureNameModal}>
+            <Check size={18} weight="bold" />
+            Confirm
+          </button>
+
+          <button className="btn btn-danger" onClick={clearCurrentImage}>
+            <X size={18} weight="bold" />
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <div className={`flex flex-col justify-center items-center gap-8 ${currentImageURL && 'hidden'}`}>
+        <video className="scale-x-[-1]" ref={videoRef} autoPlay muted onLoadedMetadata={videoIsLoaded}></video>
+
+        <button className="btn btn-success" disabled={!videoIsAvailable} onClick={takePictureHandle}>
+          <Camera size={18} weight="bold" />
+          Take Picture
+        </button>
+      </div>
+
+      {pictureNameModalIsOpen && currentImage && (
+        <Modal closeModal={closePictureNameModal}>
           <form onSubmit={submitHandler} className="flex flex-col gap-4">
             <h3 className="text-2xl font-bold text-green-600">Picture info:</h3>
 
@@ -103,7 +138,7 @@ export function MainContent() {
             </div>
 
             <div className="mt-6 flex justify-end items-center gap-8">
-              <button type="button" className="btn btn-secondary" onClick={closeModal}>
+              <button type="button" className="btn btn-secondary" onClick={closePictureNameModal}>
                 <X size={18} weight="bold" />
                 Cancel
               </button>
@@ -114,6 +149,23 @@ export function MainContent() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {errorModalIsOpen && (
+        <Modal closeModal={closeErrorModal}>
+          <h2 className="text-2xl font-bold text-red-600">Error</h2>
+
+          <p className="max-w-[400px] mt-6">
+            It wasn't possible to initialize your camera device, please verify your camera connection or permission
+          </p>
+
+          <div className="mt-10 flex justify-end">
+            <button className="btn btn-danger" onClick={closeErrorModal}>
+              <X size={18} weight="bold" />
+              Close
+            </button>
+          </div>
         </Modal>
       )}
     </main>
